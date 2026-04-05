@@ -1,0 +1,602 @@
+Actúa como un Staff/Senior Full Stack Engineer experto en **Next.js, Node.js, NestJS, PostgreSQL y arquitectura limpia/modular**.
+
+Tu tarea es diseñar y comenzar a construir un sistema web completo de **registro de ventas y gestión de eventos** para un negocio que vende:
+- Tortas
+- Banquetería dulce
+- Banquetería salada
+
+Además, el sistema debe permitir registrar **eventos**, asociarles su detalle comercial y cargar documentos como:
+- Orden de compra
+- Factura
+
+Debes trabajar como un ingeniero senior real: proponiendo una arquitectura mantenible, implementando código listo para producción, justificando decisiones brevemente y avanzando por fases sin desorden.
+
+---
+
+# 1) Objetivo del sistema
+
+Construir un sistema web que permita:
+
+## Ventas al detalle
+- Registrar ventas de productos y servicios
+- Asociar cliente
+- Registrar múltiples ítems por venta
+- Calcular subtotales, descuentos y total
+- Gestionar estados de la venta
+- Consultar historial de ventas
+
+## Gestión de eventos
+- Registrar eventos de clientes
+- Guardar detalle del evento
+- Asociar venta si corresponde
+- Cargar orden de compra
+- Cargar factura
+- Consultar estado del evento
+- Administrar trazabilidad documental
+
+## Gestión administrativa
+- Login y control de acceso por roles
+- CRUD de clientes
+- CRUD de productos/servicios
+- Dashboard con indicadores básicos
+- Auditoría de cambios importantes
+
+---
+
+# 2) Stack obligatorio
+
+## Frontend
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- React Hook Form
+- Zod
+- TanStack Query
+
+## Backend
+- Node.js
+- NestJS
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- JWT Authentication
+- bcrypt
+- class-validator
+- class-transformer
+- Swagger / OpenAPI
+- Jest
+
+## Archivos
+- Inicialmente almacenamiento local
+- Diseñar abstracción para migrar luego a S3/GCS sin romper la lógica
+
+---
+
+# 3) Requisitos funcionales
+
+## 3.1 Autenticación y usuarios
+Implementar:
+- Login
+- Logout lógico en frontend
+- Endpoint para perfil actual
+- Roles:
+  - ADMIN
+  - SELLER
+  - OPERATIONS
+
+Requisitos:
+- JWT access token
+- Password encriptado con bcrypt
+- Protección de rutas backend y frontend
+- Guards por rol
+- Seed inicial con usuario administrador
+
+## 3.2 Clientes
+CRUD completo de clientes.
+
+Campos sugeridos:
+- id
+- firstName / businessName
+- lastName opcional
+- rut o taxId
+- phone
+- email
+- address
+- notes
+- active
+- createdAt
+- updatedAt
+- createdBy
+- updatedBy
+
+## 3.3 Productos y servicios
+CRUD para catálogo de productos/servicios.
+
+Categorías mínimas:
+- TORTA
+- BANQUETERIA_DULCE
+- BANQUETERIA_SALADA
+- OTRO
+
+Campos:
+- id
+- name
+- category
+- description
+- basePrice
+- active
+- notes
+- createdAt
+- updatedAt
+- createdBy
+- updatedBy
+
+## 3.4 Ventas
+Una venta debe permitir:
+- cliente
+- fecha de venta
+- vendedor
+- estado
+- subtotal
+- discountAmount
+- total
+- notes
+
+Cada venta debe tener múltiples ítems:
+- producto/servicio
+- descripción libre opcional
+- cantidad
+- precio unitario
+- subtotal línea
+- observación línea
+
+Estados mínimos:
+- PENDING
+- CONFIRMED
+- IN_PREPARATION
+- DELIVERED
+- CANCELLED
+
+Reglas:
+- El total no se ingresa manualmente, se calcula
+- No permitir ventas sin al menos 1 ítem
+- El subtotal por línea = quantity * unitPrice
+- El total = suma líneas - descuento
+
+## 3.5 Eventos
+Cada evento debe registrar:
+- cliente
+- nombre del evento
+- tipo de evento
+- fecha
+- hora
+- lugar
+- cantidad de personas
+- detalle del servicio
+- observaciones internas
+- estado
+- vendedor responsable
+- venta asociada opcional
+
+Estados mínimos:
+- QUOTED
+- CONFIRMED
+- IN_PREPARATION
+- EXECUTED
+- INVOICED
+- CLOSED
+- CANCELLED
+
+Tipos de evento de ejemplo:
+- CUMPLEANOS
+- MATRIMONIO
+- BAUTIZO
+- EMPRESA
+- OTRO
+
+## 3.6 Documentos del evento
+Cada evento puede tener documentos asociados:
+- Orden de compra
+- Factura
+
+Debe permitirse:
+- subir archivo
+- descargar archivo
+- reemplazar archivo
+- marcar inactivo lógicamente un archivo anterior si se reemplaza
+- trazabilidad de quién lo subió
+
+Campos mínimos del documento:
+- id
+- eventId
+- documentType (PURCHASE_ORDER / INVOICE)
+- originalFileName
+- storedFileName
+- storagePath
+- mimeType
+- fileSize
+- uploadedBy
+- uploadedAt
+- active
+
+Validaciones:
+- PDF como mínimo
+- tamaño máximo configurable
+- no permitir asociar documentos a eventos inexistentes
+
+## 3.7 Dashboard
+Crear indicadores iniciales:
+- total ventas del mes
+- cantidad de ventas por estado
+- total eventos del mes
+- próximos eventos
+- monto total confirmado del mes
+- productos/servicios más vendidos
+
+---
+
+# 4) Requisitos no funcionales
+
+Debes implementar con foco en:
+- código limpio
+- arquitectura mantenible
+- separación de responsabilidades
+- escalabilidad
+- validaciones consistentes
+- manejo centralizado de errores
+- auditoría mínima
+- borrado lógico donde aplique
+- DTOs de entrada/salida
+- uso de paginación
+- nombres consistentes
+- cero lógica de negocio en controladores
+
+No generes código demo pobre ni placeholders innecesarios.
+
+---
+
+# 5) Arquitectura obligatoria
+
+## Backend
+Usa NestJS con arquitectura modular, separando claramente:
+- domain
+- application
+- infrastructure
+- interfaces
+
+Estructura sugerida:
+
+backend/
+└── src/
+    ├── main.ts
+    ├── app.module.ts
+    ├── common/
+    │   ├── dto/
+    │   ├── enums/
+    │   ├── filters/
+    │   ├── guards/
+    │   ├── interceptors/
+    │   ├── decorators/
+    │   └── utils/
+    ├── config/
+    ├── modules/
+    │   ├── auth/
+    │   ├── users/
+    │   ├── clients/
+    │   ├── products/
+    │   ├── sales/
+    │   ├── events/
+    │   ├── documents/
+    │   ├── dashboard/
+    │   └── audit/
+    ├── prisma/
+    └── storage/
+
+Dentro de cada módulo separar:
+- controller
+- service
+- dto
+- mapper si aplica
+- repository abstraction si aplica
+
+## Frontend
+Usa estructura organizada por features:
+
+frontend/
+└── src/
+    ├── app/
+    ├── components/
+    │   ├── ui/
+    │   ├── layout/
+    │   ├── forms/
+    │   ├── tables/
+    │   └── modules/
+    ├── features/
+    │   ├── auth/
+    │   ├── clients/
+    │   ├── products/
+    │   ├── sales/
+    │   ├── events/
+    │   └── dashboard/
+    ├── lib/
+    ├── services/
+    ├── hooks/
+    ├── types/
+    └── utils/
+
+---
+
+# 6) Modelo de datos obligatorio
+
+Diseña y genera un modelo relacional realista con estas tablas mínimas:
+
+- roles
+- users
+- clients
+- products
+- sales
+- sale_items
+- events
+- event_documents
+- audit_log
+
+Puedes agregar tablas auxiliares si mejora el diseño.
+
+## Reglas de modelado
+- Usa UUID de forma consistente
+- Agrega índices útiles
+- Agrega campos de auditoría
+- Usa soft delete donde tenga sentido
+- Define claramente PK, FK, unique constraints y check constraints
+- Usa enums consistentes para estados y categorías
+
+## Campos de auditoría mínimos
+Para tablas críticas:
+- created_at
+- updated_at
+- created_by
+- updated_by
+- deleted
+- deleted_at opcional
+
+## Tabla de auditoría
+Crear `audit_log` para registrar:
+- entidad afectada
+- id entidad
+- acción (CREATE, UPDATE, DELETE, STATUS_CHANGE, UPLOAD_DOCUMENT)
+- usuario
+- fecha
+- valor anterior
+- valor nuevo
+
+No hace falta auditar absolutamente todo, pero sí cambios relevantes.
+
+---
+
+# 7) API REST requerida
+
+Diseña endpoints REST versionados bajo `/api/v1`.
+
+## Auth
+- POST /api/v1/auth/login
+- GET /api/v1/auth/me
+
+## Clientes
+- GET /api/v1/clients
+- GET /api/v1/clients/{id}
+- POST /api/v1/clients
+- PUT /api/v1/clients/{id}
+- DELETE /api/v1/clients/{id}
+
+## Productos
+- GET /api/v1/products
+- GET /api/v1/products/{id}
+- POST /api/v1/products
+- PUT /api/v1/products/{id}
+- DELETE /api/v1/products/{id}
+
+## Ventas
+- GET /api/v1/sales
+- GET /api/v1/sales/{id}
+- POST /api/v1/sales
+- PUT /api/v1/sales/{id}
+- PATCH /api/v1/sales/{id}/status
+- DELETE /api/v1/sales/{id}
+
+## Eventos
+- GET /api/v1/events
+- GET /api/v1/events/{id}
+- POST /api/v1/events
+- PUT /api/v1/events/{id}
+- PATCH /api/v1/events/{id}/status
+- DELETE /api/v1/events/{id}
+
+## Documentos del evento
+- POST /api/v1/events/{id}/documents
+- GET /api/v1/events/{id}/documents
+- GET /api/v1/events/{id}/documents/{documentId}/download
+- DELETE /api/v1/events/{id}/documents/{documentId}
+
+## Dashboard
+- GET /api/v1/dashboard/summary
+
+## Requisitos API
+- Respuestas consistentes
+- Validaciones con mensajes claros
+- HTTP status correctos
+- paginación estándar
+- filtros por query params donde aplique
+- documentación Swagger
+
+---
+
+# 8) Requerimientos del frontend
+
+Crear interfaz moderna, limpia y responsive.
+
+Pantallas mínimas:
+1. Login
+2. Dashboard
+3. Listado de clientes
+4. Formulario de cliente
+5. Listado de productos/servicios
+6. Formulario de producto/servicio
+7. Listado de ventas
+8. Formulario de venta con ítems dinámicos
+9. Detalle de venta
+10. Listado de eventos
+11. Formulario de evento
+12. Detalle de evento
+13. Subida y listado de documentos del evento
+
+## UX requerida
+- tablas con búsqueda
+- filtros por estado, fecha, cliente y vendedor
+- paginación
+- formulario con validaciones claras
+- mensajes de éxito/error
+- confirmación para eliminar
+- estados vacíos elegantes
+- loading states
+- manejo correcto de errores de API
+
+---
+
+# 9) Reglas de implementación
+
+## Backend
+- No pongas lógica de negocio en controladores
+- Usa servicios con responsabilidades claras
+- Usa DTOs para requests/responses
+- Validaciones con class-validator
+- Manejo global de excepciones
+- Guards de autenticación y roles
+- Swagger correctamente configurado
+- Prisma para acceso a datos
+- Seed inicial para roles y admin
+- Configuración por variables de entorno
+- Crear abstracción de storage service para archivos
+
+## Frontend
+- Formularios con React Hook Form + Zod
+- TanStack Query para llamadas API
+- Cliente HTTP centralizado
+- Wrapper para JWT
+- Layout protegido para rutas privadas
+- Componentes reutilizables
+- Separar feature modules
+- Middleware o protección en app router según convenga
+
+---
+
+# 10) Datos y reglas de negocio adicionales
+
+- Moneda base: CLP
+- Debe quedar preparado para futuro soporte de cotizaciones
+- Debe quedar preparado para reportes PDF/Excel
+- Debe quedar preparado para calendario de eventos
+- Debe quedar preparado para pagos/cobranzas futuras
+
+## Reglas específicas
+1. Se puede registrar una venta sin evento asociado.
+2. Un evento puede existir sin venta asociada al inicio.
+3. Luego un evento puede asociarse a una venta.
+4. No eliminar físicamente clientes, productos, ventas ni eventos.
+5. Al eliminar, usar borrado lógico.
+6. Solo ADMIN puede eliminar lógicamente.
+7. SELLER puede crear y editar ventas/eventos.
+8. OPERATIONS puede ver y actualizar estados/documentos.
+9. Cada cambio importante debe dejar trazabilidad.
+
+---
+
+# 11) Entregables esperados
+
+Quiero que avances por fases y no mezcles todo de golpe.
+
+## Fase 1
+Entrégame:
+1. Resumen funcional del sistema
+2. Arquitectura propuesta
+3. Modelo entidad-relación
+4. Tablas con columnas, tipos, PK/FK
+5. Decisiones técnicas clave
+6. Lista de endpoints
+7. Estructura de carpetas backend/frontend
+8. Plan de implementación
+
+## Fase 2
+Genera el backend base completo:
+- package.json
+- tsconfig.json
+- nest-cli.json
+- .env.example
+- configuración global
+- Prisma schema
+- migraciones
+- seed
+- auth JWT
+- roles/guards
+- módulos base
+- manejo global de errores
+- Swagger
+- utilidades comunes
+
+## Fase 3
+Genera el frontend base:
+- estructura base Next.js
+- login
+- layout privado
+- navegación lateral o superior
+- módulo dashboard
+- CRUD clientes
+- CRUD productos
+
+## Fase 4
+Implementa ventas:
+- endpoints
+- lógica
+- formulario frontend con detalle dinámico
+- listado y detalle
+
+## Fase 5
+Implementa eventos:
+- endpoints
+- lógica
+- formulario frontend
+- detalle de evento
+- carga/descarga de documentos
+
+## Fase 6
+Agrega tests backend para casos críticos:
+- auth
+- clients
+- products
+- sales
+- events
+- documents
+
+---
+
+# 12) Forma exacta de respuesta
+
+Importante:
+
+- Comienza por la **Fase 1**.
+- No saltes directamente al código sin antes diseñar bien.
+- Sé concreto y profesional.
+- Cuando pases a implementación, entrega archivos completos, listos para copiar y pegar.
+- Muestra el path del archivo antes del contenido.
+- No omitas imports importantes.
+- No rompas la lógica entre archivos.
+- Si debes elegir entre varias opciones menores, elige la más mantenible y sigue.
+- No uses pseudocódigo cuando ya puedas entregar código real.
+
+## Formato esperado al generar archivos
+Usa este formato:
+
+### backend/src/modules/auth/auth.controller.ts
+```ts
+// código completo
