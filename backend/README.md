@@ -20,15 +20,23 @@ Sistema backend para gestión de ventas y eventos, desarrollado con NestJS.
 ```bash
 # Instalar dependencias
 npm install
+```
 
-# Generar cliente Prisma
-npx prisma generate
+### Configuración de Base de Datos
 
-# Ejecutar migraciones
-npx prisma migrate dev
+El sistema maneja dos conexiones: **desarrollo** y **producción**.
 
-# Poblar datos iniciales (opcional)
-npm run prisma:seed
+```bash
+# Desarrollo - Copiar y configurar .env
+cp .env.example .env
+# Editar .env con tus credenciales de base de datos dev
+
+# Generar cliente Prisma y migrate (desarrollo)
+npm run prisma:generate:dev
+npm run prisma:migrate:dev
+
+# Poblar datos iniciales (desarrollo)
+npm run prisma:seed:dev
 ```
 
 ## 🔧 Configuración
@@ -36,28 +44,49 @@ npm run prisma:seed
 Crear archivo `.env` basado en `.env.example`:
 
 ```env
-# Database
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/salesystem?schema=public"
+# Entorno (development | production)
+NODE_ENV=development
+PORT=3001
+
+# Database - Separadas por ambiente
+DATABASE_URL_DEV=postgresql://user:password@localhost:5432/salesystem_dev
+DATABASE_URL_PROD=postgresql://user:password@localhost:5432/salesystem_prod
 
 # JWT
 JWT_SECRET="tu-secret-key-aqui"
 JWT_EXPIRES_IN="1d"
 
-# Server
-PORT=3001
-NODE_ENV=development
+# Storage
+STORAGE_LOCAL_PATH=./uploads
+STORAGE_MAX_FILE_SIZE=10485760
 ```
+
+**Nota**: El sistema selecciona automáticamente la base de datos según `NODE_ENV`:
+- `development` → usa `DATABASE_URL_DEV`
+- `production` → usa `DATABASE_URL_PROD`
 
 ## ▶️ Ejecución
 
 ```bash
-# Desarrollo (con watch)
+# Desarrollo (con watch) - usa DATABASE_URL_DEV
 npm run start:dev
 
-# Producción
+# Producción - usa DATABASE_URL_PROD
 npm run build
 npm run start:prod
 ```
+
+**Scripts por ambiente:**
+| Script | Descripción |
+|--------|-------------|
+| `prisma:generate:dev` | Generar cliente para dev |
+| `prisma:generate:prod` | Generar cliente para prod |
+| `prisma:migrate:dev` | Migrar base dev |
+| `prisma:migrate:prod` | Migrar base prod (deploy) |
+| `prisma:push:dev` | Sincronizar schema dev |
+| `prisma:push:prod` | Sincronizar schema prod |
+| `prisma:seed:dev` | Poblar datos dev |
+| `prisma:seed:prod` | Poblar datos prod |
 
 El servidor estará disponible en: **http://localhost:3001**
 

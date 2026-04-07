@@ -37,10 +37,21 @@ Sistema de gestión integral que permite:
 ```bash
 cd backend
 npm install
-npx prisma generate
-npx prisma migrate dev
-npm run prisma:seed
+
+# Configuración de base de datos por ambiente
+# El sistema usa DATABASE_URL_DEV para desarrollo y DATABASE_URL_PROD para producción
+
+# Desarrollo
+cp .env.example .env
+# Editar .env con tus credenciales
+npm run prisma:generate:dev
+npm run prisma:migrate:dev
+npm run prisma:seed:dev
 npm run start:dev
+
+# Producción
+npm run build
+npm run start:prod
 ```
 
 **Puerto**: http://localhost:3001

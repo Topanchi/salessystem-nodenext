@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSaleDto, UpdateSaleDto, SaleItemDto } from './dto';
-import { SaleStatus } from '../../../common/enums';
+import { SaleStatus } from '../../common/enums';
 
 @Injectable()
 export class SalesService {
@@ -133,22 +133,21 @@ export class SalesService {
 
     delete updateData.items;
 
-    const [updatedSale] = await this.prisma.$transaction([
-      this.prisma.sale.update({
-        where: { id },
-        data: updateData,
-        include: {
-          client: true,
-          seller: { select: { id: true, email: true, firstName: true, lastName: true } },
-          items: { include: { product: true } },
-        },
-      }),
-      updateSaleDto.items
-        ? this.prisma.saleItem.deleteMany({ where: { saleId: id } })
-        : Promise.resolve({ count: 0 }),
-    ]);
+    const updatedSale = await this.prisma.sale.update({
+      where: { id },
+      data: updateData,
+      include: {
+        client: true,
+        seller: { select: { id: true, email: true, firstName: true, lastName: true } },
+        items: { include: { product: true } },
+      },
+    });
 
     if (updateSaleDto.items) {
+      await this.prisma.$transaction([
+        this.prisma.saleItem.deleteMany({ where: { saleId: id } }),
+      ]);
+
       await this.prisma.saleItem.createMany({
         data: updateSaleDto.items.map((item) => ({
           saleId: id,

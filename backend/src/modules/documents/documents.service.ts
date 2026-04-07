@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
-import { LocalStorageService } from '../../../storage/storage.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { LocalStorageService } from '../../storage/storage.service';
 import { CreateDocumentDto } from './dto';
 
 @Injectable()

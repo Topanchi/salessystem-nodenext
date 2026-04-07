@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SaleStatus, EventStatus } from '../../common/enums';
+import { ProductCategory } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -68,9 +69,9 @@ export class DashboardService {
       }),
     ]);
 
-    let topProductsWithDetails = [];
+    let topProductsWithDetails: { productId: string | null; name: string; category: ProductCategory | undefined; totalQuantity: number | null; }[] = [];
     if (topProducts.length > 0) {
-      const productIds = topProducts.map((p) => p.productId).filter(Boolean);
+      const productIds = topProducts.map((p) => p.productId).filter((id): id is string => id !== null);
       if (productIds.length > 0) {
         const products = await this.prisma.product.findMany({
           where: { id: { in: productIds } },

@@ -85,10 +85,18 @@ backend/
 COMANDOS PARA EJECUTAR:
 cd backend
 npm install
-npx prisma generate
-npx prisma migrate dev
-npm run prisma:seed   # Crea datos iniciales
+
+# Desarrollo
+cp .env.example .env
+# Configurar DATABASE_URL_DEV en .env
+npm run prisma:generate:dev
+npm run prisma:migrate:dev
+npm run prisma:seed:dev
 npm run start:dev    # Servidor en http://localhost:3001
+
+# Producción
+npm run build
+npm run start:prod   # Usa DATABASE_URL_PROD
 
 CREDENCIALES POR DEFECTO:
 - Admin: admin@salessystem.cl / admin123

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateEventDto, UpdateEventDto } from './dto';
-import { EventStatus } from '../../../common/enums';
+import { EventStatus } from '../../common/enums';
 
 @Injectable()
 export class EventsService {
