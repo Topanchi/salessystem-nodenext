@@ -119,7 +119,7 @@ export default function SalesPage() {
   const fetchSales = async () => {
     try {
       const params: any = { limit: 100 }
-      if (statusFilter) params.status = statusFilter
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter
       const response = await api.get("/sales", { params })
       setSales(response.data.data)
     } catch (error) {
@@ -374,7 +374,7 @@ export default function SalesPage() {
                 <SelectValue placeholder="Todos los estados" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {statusOptions.map(opt => (
                   <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                 ))}

@@ -74,7 +74,7 @@ export default function ProductsPage() {
     try {
       const params: any = { limit: 100 }
       if (search) params.search = search
-      if (categoryFilter) params.category = categoryFilter
+      if (categoryFilter && categoryFilter !== "all") params.category = categoryFilter
       const response = await api.get("/products", { params })
       setProducts(response.data.data)
     } catch (error) {
@@ -222,7 +222,7 @@ export default function ProductsPage() {
                 <SelectValue placeholder="Todas las categorías" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las categorías</SelectItem>
+                <SelectItem value="all">Todas las categorías</SelectItem>
                 {categories.map((cat) => (
                   <SelectItem key={cat.value} value={cat.value}>
                     {cat.label}

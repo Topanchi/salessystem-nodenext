@@ -113,7 +113,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       const params: any = { limit: 100 }
-      if (statusFilter) params.status = statusFilter
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter
       const response = await api.get("/events", { params })
       setEvents(response.data.data)
     } catch (error) {
@@ -362,7 +362,7 @@ export default function EventsPage() {
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-40"><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {eventStatuses.map(s => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
               </SelectContent>
             </Select>
