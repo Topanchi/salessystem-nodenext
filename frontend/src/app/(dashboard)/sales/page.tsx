@@ -189,7 +189,7 @@ export default function SalesPage() {
   const handleEdit = async (sale: Sale) => {
     setEditingSale(sale)
     reset({
-      clientId: sale.clientId,
+      clientId: sale.id,
       status: sale.status,
       items: sale.items.map(item => ({
         productId: item.productId || "",

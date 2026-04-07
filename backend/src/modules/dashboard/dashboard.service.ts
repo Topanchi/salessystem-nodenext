@@ -31,7 +31,7 @@ export class DashboardService {
       }),
       this.prisma.sale.groupBy({
         by: ['status'],
-        _count: { status: true },
+        _count: true,
       }),
       this.prisma.event.count({
         where: {
@@ -41,7 +41,7 @@ export class DashboardService {
       }),
       this.prisma.event.groupBy({
         by: ['status'],
-        _count: { status: true },
+        _count: true,
       }),
       this.prisma.event.findMany({
         where: {
@@ -69,7 +69,7 @@ export class DashboardService {
       }),
     ]);
 
-    let topProductsWithDetails: { productId: string | null; name: string; category: ProductCategory | undefined; totalQuantity: number | null; }[] = [];
+    let topProductsWithDetails: { productId: string | null; name: string; category: string | undefined; totalQuantity: number | null; }[] = [];
     if (topProducts.length > 0) {
       const productIds = topProducts.map((p) => p.productId).filter((id): id is string => id !== null);
       if (productIds.length > 0) {
@@ -84,7 +84,7 @@ export class DashboardService {
             return {
               productId: p.productId,
               name: product?.name || 'Producto eliminado',
-              category: product?.category,
+              category: product?.category ? String(product.category) : undefined,
               totalQuantity: p._sum.quantity,
             };
           });
@@ -94,16 +94,16 @@ export class DashboardService {
     return {
       totalSalesThisMonth: totalSalesThisMonth._sum.total?.toNumber() || 0,
       salesCountThisMonth: totalSalesThisMonth._count,
-      salesByStatus: salesByStatus.map((s) => ({ status: s.status, count: s._count })),
+      salesByStatus: salesByStatus.map((s) => ({ status: String(s.status), count: s._count })),
       totalEventsThisMonth,
-      eventsByStatus: eventsByStatus.map((e) => ({ status: e.status, count: e._count })),
+      eventsByStatus: eventsByStatus.map((e) => ({ status: String(e.status), count: e._count })),
       upcomingEvents: upcomingEvents.map((e) => ({
         id: e.id,
         name: e.name,
         date: e.eventDate,
         client: `${e.client.firstName} ${e.client.lastName || ''}`.trim(),
         phone: e.client.phone,
-        status: e.status,
+        status: String(e.status),
       })),
       confirmedAmount: confirmedAmount._sum.total?.toNumber() || 0,
       topProducts: topProductsWithDetails,
