@@ -29,6 +29,7 @@ export class EventsService {
         client: true,
         seller: { select: { id: true, email: true, firstName: true, lastName: true } },
         sale: true,
+        documents: { where: { active: true } },
       },
     });
   }
@@ -51,6 +52,7 @@ export class EventsService {
           client: true,
           seller: { select: { id: true, email: true, firstName: true, lastName: true } },
           sale: true,
+          documents: { where: { active: true } },
         },
         skip: (page - 1) * limit,
         take: limit,
@@ -119,6 +121,7 @@ export class EventsService {
         client: true,
         seller: { select: { id: true, email: true, firstName: true, lastName: true } },
         sale: true,
+        documents: { where: { active: true } },
       },
     });
   }
