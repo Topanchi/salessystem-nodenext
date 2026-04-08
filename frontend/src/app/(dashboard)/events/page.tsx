@@ -104,6 +104,7 @@ export default function EventsPage() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [documents, setDocuments] = useState<EventDocument[]>([])
+  const [documentType, setDocumentType] = useState<"PURCHASE_ORDER" | "INVOICE">("PURCHASE_ORDER")
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<EventForm>({
     resolver: zodResolver(eventSchema),
@@ -202,7 +203,7 @@ export default function EventsPage() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("documentType", "PURCHASE_ORDER")
+      formData.append("documentType", documentType)
 
       await api.post(`/events/${selectedEvent.id}/documents`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -214,6 +215,9 @@ export default function EventsPage() {
       alert(error.response?.data?.message || "Error al subir documento")
     } finally {
       setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
     }
   }
 
@@ -399,6 +403,11 @@ export default function EventsPage() {
                         <Button variant="outline" size="sm" onClick={() => openDocuments(event)}>
                           <FileText className="w-4 h-4 mr-1" />
                           {event.documents?.length || 0}
+                          {(event.documents?.some(d => d.documentType === "PURCHASE_ORDER") || event.documents?.some(d => d.documentType === "INVOICE")) && (
+                            <span className="ml-1 text-xs">
+                              ({event.documents?.filter(d => d.documentType === "PURCHASE_ORDER").length}OC/{event.documents?.filter(d => d.documentType === "INVOICE").length}F)
+                            </span>
+                          )}
                         </Button>
                       </TableCell>
                       <TableCell>
@@ -422,7 +431,16 @@ export default function EventsPage() {
             <DialogTitle>Documentos - {selectedEvent?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={documentType} onValueChange={(value: "PURCHASE_ORDER" | "INVOICE") => setDocumentType(value)}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Tipo de documento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PURCHASE_ORDER">Orden de Compra</SelectItem>
+                  <SelectItem value="INVOICE">Factura</SelectItem>
+                </SelectContent>
+              </Select>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -430,9 +448,9 @@ export default function EventsPage() {
                 className="hidden"
                 onChange={handleUploadDocument}
               />
-              <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+              <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full sm:w-auto">
                 <Upload className="w-4 h-4 mr-2" />
-                {uploading ? "Subiendo..." : "Subir Orden de Compra"}
+                {uploading ? "Subiendo..." : "Subir"}
               </Button>
             </div>
 
@@ -444,7 +462,12 @@ export default function EventsPage() {
                   <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-2">
                       <FileText className="w-5 h-5" />
-                      <span className="text-sm">{doc.originalFileName}</span>
+                      <div>
+                        <span className="text-sm font-medium">{doc.originalFileName}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.documentType === "PURCHASE_ORDER" ? "Orden de Compra" : "Factura"}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleDownload(doc)}>
