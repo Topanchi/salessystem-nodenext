@@ -104,6 +104,7 @@ export default function EventsPage() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [documents, setDocuments] = useState<EventDocument[]>([])
+  const [documentType, setDocumentType] = useState<"PURCHASE_ORDER" | "INVOICE">("PURCHASE_ORDER")
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<EventForm>({
     resolver: zodResolver(eventSchema),
@@ -113,7 +114,7 @@ export default function EventsPage() {
   const fetchEvents = async () => {
     try {
       const params: any = { limit: 100 }
-      if (statusFilter) params.status = statusFilter
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter
       const response = await api.get("/events", { params })
       setEvents(response.data.data)
     } catch (error) {
@@ -202,7 +203,7 @@ export default function EventsPage() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("documentType", "PURCHASE_ORDER")
+      formData.append("documentType", documentType)
 
       await api.post(`/events/${selectedEvent.id}/documents`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -214,6 +215,9 @@ export default function EventsPage() {
       alert(error.response?.data?.message || "Error al subir documento")
     } finally {
       setUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""
+      }
     }
   }
 
@@ -262,25 +266,25 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Eventos</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Eventos</h1>
           <p className="text-muted-foreground">Gestión de eventos</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingEvent(null); reset({ clientId: "", name: "", type: "", eventDate: "", eventTime: "", location: "", guestCount: undefined, serviceDetails: "", observations: "", status: "QUOTED" }) }}>
+            <Button onClick={() => { setEditingEvent(null); reset({ clientId: "", name: "", type: "", eventDate: "", eventTime: "", location: "", guestCount: undefined, serviceDetails: "", observations: "", status: "QUOTED" }) }} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Nuevo Evento
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] lg:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingEvent ? "Editar Evento" : "Nuevo Evento"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Cliente *</Label>
                   <Select onValueChange={(v) => setValue("clientId", v)} defaultValue={editingEvent?.clientId}>
@@ -300,7 +304,7 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Tipo *</Label>
                   <Select onValueChange={(v) => setValue("type", v)} defaultValue={editingEvent?.type}>
@@ -322,7 +326,7 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Lugar</Label>
                   <Input {...register("location")} />
@@ -354,15 +358,15 @@ export default function EventsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-4 h-4" />
-              <Input placeholder="Buscar eventos..." className="max-w-sm" />
+              <Input placeholder="Buscar eventos..." className="max-w-[200px] sm:max-w-sm" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {eventStatuses.map(s => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
               </SelectContent>
             </Select>
@@ -374,42 +378,49 @@ export default function EventsPage() {
           ) : events.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">No hay eventos</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Lugar</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Docs</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-medium">{event.name}</TableCell>
-                    <TableCell>{event.client.firstName} {event.client.lastName}</TableCell>
-                    <TableCell>{formatDate(event.eventDate)}</TableCell>
-                    <TableCell>{event.location || "-"}</TableCell>
-                    <TableCell>{getStatusBadge(event.status)}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openDocuments(event)}>
-                        <FileText className="w-4 h-4 mr-1" />
-                        {event.documents?.length || 0}
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>Editar</Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)}>Cancelar</Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto -mx-6 px-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Lugar</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Docs</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {events.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell className="font-medium">{event.name}</TableCell>
+                      <TableCell>{event.client.firstName} {event.client.lastName}</TableCell>
+                      <TableCell>{formatDate(event.eventDate)}</TableCell>
+                      <TableCell>{event.location || "-"}</TableCell>
+                      <TableCell>{getStatusBadge(event.status)}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" onClick={() => openDocuments(event)}>
+                          <FileText className="w-4 h-4 mr-1" />
+                          {event.documents?.length || 0}
+                          {(event.documents?.some(d => d.documentType === "PURCHASE_ORDER") || event.documents?.some(d => d.documentType === "INVOICE")) && (
+                            <span className="ml-1 text-xs">
+                              ({event.documents?.filter(d => d.documentType === "PURCHASE_ORDER").length}OC/{event.documents?.filter(d => d.documentType === "INVOICE").length}F)
+                            </span>
+                          )}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>Editar</Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)}>Cancelar</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -420,7 +431,16 @@ export default function EventsPage() {
             <DialogTitle>Documentos - {selectedEvent?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Select value={documentType} onValueChange={(value: "PURCHASE_ORDER" | "INVOICE") => setDocumentType(value)}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Tipo de documento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PURCHASE_ORDER">Orden de Compra</SelectItem>
+                  <SelectItem value="INVOICE">Factura</SelectItem>
+                </SelectContent>
+              </Select>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -428,9 +448,9 @@ export default function EventsPage() {
                 className="hidden"
                 onChange={handleUploadDocument}
               />
-              <Button onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+              <Button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="w-full sm:w-auto">
                 <Upload className="w-4 h-4 mr-2" />
-                {uploading ? "Subiendo..." : "Subir Orden de Compra"}
+                {uploading ? "Subiendo..." : "Subir"}
               </Button>
             </div>
 
@@ -442,7 +462,12 @@ export default function EventsPage() {
                   <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-2">
                       <FileText className="w-5 h-5" />
-                      <span className="text-sm">{doc.originalFileName}</span>
+                      <div>
+                        <span className="text-sm font-medium">{doc.originalFileName}</span>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.documentType === "PURCHASE_ORDER" ? "Orden de Compra" : "Factura"}
+                        </p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleDownload(doc)}>

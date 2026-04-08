@@ -171,22 +171,22 @@ export interface PaginatedResponse<T> {
 export interface DashboardSummary {
   totalSalesThisMonth: number;
   salesCountThisMonth: number;
-  salesByStatus: { status: SaleStatus; count: number }[];
+  salesByStatus: { status: string; count: number }[];
   totalEventsThisMonth: number;
-  eventsByStatus: { status: EventStatus; count: number }[];
+  eventsByStatus: { status: string; count: number }[];
   upcomingEvents: {
     id: string;
     name: string;
     date: string;
     client: string;
     phone: string | null;
-    status: EventStatus;
+    status: string;
   }[];
   confirmedAmount: number;
   topProducts: {
     productId: string | null;
     name: string;
-    category: ProductCategory | null;
+    category: string | null;
     totalQuantity: number;
   }[];
 }
