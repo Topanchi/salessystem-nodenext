@@ -232,10 +232,10 @@ export default function SalesPage() {
   const total = subtotal - discount
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Ventas</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Ventas</h1>
           <p className="text-muted-foreground">Gestión de ventas</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -246,19 +246,19 @@ export default function SalesPage() {
               items: [{ productId: "", description: "", quantity: 1, unitPrice: 0, observation: "" }],
               discountAmount: 0,
               notes: "",
-            })}}>
+            })}} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Nueva Venta
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] lg:max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingSale ? "Editar Venta" : "Nueva Venta"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Cliente *</Label>
                   <Select onValueChange={(value) => setValue("clientId", value)}>
@@ -302,10 +302,10 @@ export default function SalesPage() {
                   <p className="text-sm text-red-600 mb-2">{errors.items.message as string}</p>
                 )}
 
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-x-auto">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-1">
+                    <div key={field.id} className="flex flex-wrap sm:flex-nowrap gap-2 items-start p-3 bg-gray-50 rounded-lg min-w-[600px]">
+                      <div className="flex-1 min-w-[150px]">
                         <Select 
                           {...register(`items.${index}.productId`)} 
                           onValueChange={(value) => { setValue(`items.${index}.productId`, value); handleProductChange(index, value); }}
@@ -320,13 +320,13 @@ export default function SalesPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="w-20">
+                      <div className="w-16 sm:w-20">
                         <Input type="number" {...register(`items.${index}.quantity`)} min="1" placeholder="Cant" />
                       </div>
-                      <div className="w-28">
+                      <div className="w-20 sm:w-28">
                         <Input type="number" {...register(`items.${index}.unitPrice`)} placeholder="Precio" />
                       </div>
-                      <div className="w-24 text-right py-2 font-medium">
+                      <div className="w-20 sm:w-24 text-right py-2 font-medium">
                         {formatCurrency((watchedItems[index]?.quantity || 0) * (watchedItems[index]?.unitPrice || 0))}
                       </div>
                       <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} disabled={fields.length === 1}>
@@ -364,13 +364,13 @@ export default function SalesPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-4 h-4" />
-              <Input placeholder="Buscar ventas..." className="max-w-sm" />
+              <Input placeholder="Buscar ventas..." className="max-w-[200px] sm:max-w-sm" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-full sm:w-40">
                 <SelectValue placeholder="Todos los estados" />
               </SelectTrigger>
               <SelectContent>
@@ -388,40 +388,42 @@ export default function SalesPage() {
           ) : sales.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">No hay ventas registradas</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Vendedor</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-mono text-xs">{sale.id.slice(0, 8)}...</TableCell>
-                    <TableCell>
-                      {sale.client.firstName} {sale.client.lastName}
-                      {sale.client.businessName && <span className="text-xs text-muted-foreground ml-1">({sale.client.businessName})</span>}
-                    </TableCell>
-                    <TableCell>{sale.seller.firstName} {sale.seller.lastName}</TableCell>
-                    <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
-                    <TableCell>{getStatusBadge(sale.status)}</TableCell>
-                    <TableCell>{formatDate(sale.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(sale)}>Editar</Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(sale.id)}>Cancelar</Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto -mx-6 px-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Vendedor</TableHead>
+                    <TableHead>Total</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {sales.map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-mono text-xs">{sale.id.slice(0, 8)}...</TableCell>
+                      <TableCell>
+                        {sale.client.firstName} {sale.client.lastName}
+                        {sale.client.businessName && <span className="text-xs text-muted-foreground ml-1">({sale.client.businessName})</span>}
+                      </TableCell>
+                      <TableCell>{sale.seller.firstName} {sale.seller.lastName}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(sale.total)}</TableCell>
+                      <TableCell>{getStatusBadge(sale.status)}</TableCell>
+                      <TableCell>{formatDate(sale.createdAt)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(sale)}>Editar</Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(sale.id)}>Cancelar</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

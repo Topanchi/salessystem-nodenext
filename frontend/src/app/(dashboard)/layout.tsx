@@ -10,8 +10,11 @@ import {
   Package, 
   ShoppingCart, 
   Calendar, 
-  LogOut 
+  LogOut,
+  Menu,
+  X
 } from "lucide-react"
+import { useState } from "react"
 
 const sidebarItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -28,6 +31,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const handleLogout = () => {
     localStorage.removeItem("token")
@@ -37,7 +41,25 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 bg-slate-900 text-white flex flex-col">
+      <button
+        type="button"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-900 text-white rounded-md"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside className={cn(
+        "fixed lg:static inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white flex flex-col transition-transform duration-200 ease-in-out",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
         <div className="p-6 border-b border-slate-800">
           <h1 className="text-xl font-bold">Sistema de Ventas</h1>
         </div>
@@ -49,6 +71,7 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => setSidebarOpen(false)}
                 className={cn(
                   "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
                   isActive 
@@ -73,8 +96,8 @@ export default function DashboardLayout({
           </Button>
         </div>
       </aside>
-      <main className="flex-1 bg-gray-50">
-        <div className="p-8">
+      <main className="flex-1 bg-gray-50 w-full lg:w-auto">
+        <div className="p-4 lg:p-8">
           {children}
         </div>
       </main>

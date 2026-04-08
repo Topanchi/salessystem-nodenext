@@ -126,27 +126,27 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Clientes</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Clientes</h1>
           <p className="text-muted-foreground">Gestión de clientes</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingClient(null); reset() }}>
+            <Button onClick={() => { setEditingClient(null); reset() }} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Nuevo Cliente
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-[425px] w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingClient ? "Editar Cliente" : "Nuevo Cliente"}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">Nombre *</Label>
                   <Input {...register("firstName")} />
@@ -200,14 +200,16 @@ export default function ClientsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            <Input
-              placeholder="Buscar clientes..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-sm"
-            />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              <Input
+                placeholder="Buscar clientes..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="max-w-[200px] sm:max-w-sm"
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -218,44 +220,46 @@ export default function ClientsPage() {
               No hay clientes registrados
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>RUT</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Creado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {clients.map((client) => (
-                  <TableRow key={client.id}>
-                    <TableCell className="font-medium">
-                      {client.firstName} {client.lastName}
-                      {client.businessName && (
-                        <p className="text-xs text-muted-foreground">{client.businessName}</p>
-                      )}
-                    </TableCell>
-                    <TableCell>{client.rut || "-"}</TableCell>
-                    <TableCell>{client.phone || "-"}</TableCell>
-                    <TableCell>{client.email || "-"}</TableCell>
-                    <TableCell>{formatDate(client.createdAt)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(client)}>
-                          Editar
-                        </Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(client.id)}>
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto -mx-6 px-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>RUT</TableHead>
+                    <TableHead>Teléfono</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Creado</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {clients.map((client) => (
+                    <TableRow key={client.id}>
+                      <TableCell className="font-medium">
+                        {client.firstName} {client.lastName}
+                        {client.businessName && (
+                          <p className="text-xs text-muted-foreground">{client.businessName}</p>
+                        )}
+                      </TableCell>
+                      <TableCell>{client.rut || "-"}</TableCell>
+                      <TableCell>{client.phone || "-"}</TableCell>
+                      <TableCell>{client.email || "-"}</TableCell>
+                      <TableCell>{formatDate(client.createdAt)}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(client)}>
+                            Editar
+                          </Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(client.id)}>
+                            Eliminar
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

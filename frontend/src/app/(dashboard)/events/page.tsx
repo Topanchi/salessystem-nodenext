@@ -262,25 +262,25 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Eventos</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold">Eventos</h1>
           <p className="text-muted-foreground">Gestión de eventos</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => { setEditingEvent(null); reset({ clientId: "", name: "", type: "", eventDate: "", eventTime: "", location: "", guestCount: undefined, serviceDetails: "", observations: "", status: "QUOTED" }) }}>
+            <Button onClick={() => { setEditingEvent(null); reset({ clientId: "", name: "", type: "", eventDate: "", eventTime: "", location: "", guestCount: undefined, serviceDetails: "", observations: "", status: "QUOTED" }) }} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Nuevo Evento
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] lg:max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingEvent ? "Editar Evento" : "Nuevo Evento"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Cliente *</Label>
                   <Select onValueChange={(v) => setValue("clientId", v)} defaultValue={editingEvent?.clientId}>
@@ -300,7 +300,7 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>Tipo *</Label>
                   <Select onValueChange={(v) => setValue("type", v)} defaultValue={editingEvent?.type}>
@@ -322,7 +322,7 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Lugar</Label>
                   <Input {...register("location")} />
@@ -354,13 +354,13 @@ export default function EventsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex gap-4 items-center">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
             <div className="flex items-center gap-2 flex-1">
               <Search className="w-4 h-4" />
-              <Input placeholder="Buscar eventos..." className="max-w-sm" />
+              <Input placeholder="Buscar eventos..." className="max-w-[200px] sm:max-w-sm" />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40"><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-40"><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos</SelectItem>
                 {eventStatuses.map(s => (<SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>))}
@@ -374,42 +374,44 @@ export default function EventsPage() {
           ) : events.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">No hay eventos</div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Lugar</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Docs</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {events.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-medium">{event.name}</TableCell>
-                    <TableCell>{event.client.firstName} {event.client.lastName}</TableCell>
-                    <TableCell>{formatDate(event.eventDate)}</TableCell>
-                    <TableCell>{event.location || "-"}</TableCell>
-                    <TableCell>{getStatusBadge(event.status)}</TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => openDocuments(event)}>
-                        <FileText className="w-4 h-4 mr-1" />
-                        {event.documents?.length || 0}
-                      </Button>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>Editar</Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)}>Cancelar</Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto -mx-6 px-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Lugar</TableHead>
+                    <TableHead>Estado</TableHead>
+                    <TableHead>Docs</TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {events.map((event) => (
+                    <TableRow key={event.id}>
+                      <TableCell className="font-medium">{event.name}</TableCell>
+                      <TableCell>{event.client.firstName} {event.client.lastName}</TableCell>
+                      <TableCell>{formatDate(event.eventDate)}</TableCell>
+                      <TableCell>{event.location || "-"}</TableCell>
+                      <TableCell>{getStatusBadge(event.status)}</TableCell>
+                      <TableCell>
+                        <Button variant="outline" size="sm" onClick={() => openDocuments(event)}>
+                          <FileText className="w-4 h-4 mr-1" />
+                          {event.documents?.length || 0}
+                        </Button>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(event)}>Editar</Button>
+                          <Button variant="destructive" size="sm" onClick={() => handleDelete(event.id)}>Cancelar</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
