@@ -1,0 +1,171 @@
+# Opciones de Despliegue - SalesSystem
+
+## Requisitos Generales
+- Node.js 18+
+- PostgreSQL 14+
+- Redis (opcional, para caché)
+
+---
+
+## OPCIÓN 1: VPS/Servidor Propio (Docker + Docker Compose)
+
+### Pros
+- Control total del servidor
+- Costos predecibles
+- Flexibilidad completa
+
+### Cons
+- Requiere administración del servidor
+- Configuración manual
+
+### Pasos:
+1. Instalar Docker y Docker Compose
+2. Configurar docker-compose.yml con:
+   - PostgreSQL
+   - Backend (NestJS)
+   - Frontend (Next.js)
+   - Nginx (proxy reverso)
+3. Configurar dominio y SSL (Let's Encrypt)
+
+### Recursos estimados: $20-50/mes
+
+---
+
+## OPCIÓN 2: Render (PaaS)
+
+### Frontend y Backend
+- Frontend: Static Site (Next.js)
+- Backend: Web Service (NestJS)
+- PostgreSQL: Managed Database
+
+### Pros
+- Configuración rápida
+- SSL automático
+- Escala automáticamente
+
+### Contras
+- waking en gratuita
+- Costos variables
+
+### Pasos:
+1. Conectar repositorio GitHub
+2. Configurar variables de entorno
+3. Desplegar servicios
+
+### Recursos estimados: $0-50/mes
+
+---
+
+## OPCIÓN 3: Railway
+
+### Stack
+- Backend + Frontend como servicios separados
+- PostgreSQL integrado
+
+### Pros
+- Interfaz intuitiva
+- Despliegue con Git
+- Incluye SSL
+
+### Contras
+- Costos pueden variar
+- Limitado en plan gratuito
+
+### Recursos estimados: $0-40/mes
+
+---
+
+## OPCIÓN 4: Vercel + Railway (Híbrido)
+
+### Stack
+- Frontend: Vercel (Next.js optimizado)
+- Backend + DB: Railway
+
+### Pros
+- Excelente rendimiento de frontend
+- Backend completo
+- SSL automático
+
+### Contras
+- Múltiples proveedores
+
+### Recursos estimados: $0-50/mes
+
+---
+
+## OPCIÓN 5: Fly.io
+
+### Stack
+- Contenedores Docker
+- PostgreSQL incluido
+
+### Pros
+- Distribución global
+- Pricing por uso
+- Docker nativo
+
+### Contras
+- Curva de aprendizaje media
+
+### Recursos estimados: $0-50/mes
+
+---
+
+## OPCIÓN 6: AWS (EC2 + RDS)
+
+### Stack
+- EC2: Backend + Frontend
+- RDS: PostgreSQL
+- S3: Archivos estáticos
+
+### Pros
+- Escalabilidad ilimitada
+- Servicios adicionales disponibles
+- Alta disponibilidad
+
+### Contras
+- Complejo para principiantes
+- Costos variables
+
+### Recursos estimados: $50-200+/mes
+
+---
+
+## Recomendación según uso
+
+| Uso | Recomendado |
+|-----|-------------|
+| Desarrollo/MVP | Render o Railway |
+| Pequeña empresa | Railway o VPS |
+| Alta demanda | AWS o Fly.io |
+| Enterprise | AWS con Kubernetes |
+
+---
+
+## Variables de Entorno Requeridas
+
+### Backend
+```
+DATABASE_URL_DEV=postgresql://...
+DATABASE_URL_PROD=postgresql://...
+JWT_SECRET=...
+PORT=3001
+```
+
+### Frontend
+```
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+# En producción: NEXT_PUBLIC_API_URL=https://api.tudominio.com/api/v1
+```
+
+---
+
+## Checklist de Producción
+
+- [ ] Configurar HTTPS/SSL
+- [ ] Configurar variables de entorno
+- [ ] Configurar backup de base de datos
+- [ ] Configurar logs y monitoreo
+- [ ] Configurar dominio
+- [ ] Probar endpoints en producción
+- [ ] Configurar CI/CD (opcional)
